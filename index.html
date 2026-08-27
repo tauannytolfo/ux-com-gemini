@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="theme-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal da Terceira Idade - Acessibilidade Simplificada</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --font-scale: 1;
+      --bg-main: #ffffff;
+      --bg-card: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #334155;
+      --border-color: #cbd5e1;
+      --primary: #1e40af;
+      --primary-hover: #1e3a8a;
+      --focus-outline: #f59e0b;
+    }
+
+    /* Alto Contraste - Amarelo e Preto */
+    .theme-high-contrast {
+      --bg-main: #000000;
+      --bg-card: #121212;
+      --text-main: #ffff00;
+      --text-muted: #ffffff;
+      --border-color: #ffff00;
+      --primary: #ffff00;
+      --primary-hover: #e6e600;
+      --focus-outline: #ffffff;
+    }
+
+    /* Modo Escuro */
+    .theme-dark {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --border-color: #475569;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --focus-outline: #fbbf24;
+    }
+
+    html {
+      font-size: calc(18px * var(--font-scale));
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.8;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* Teclado e Foco Visível para Acessibilidade */
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 5px solid var(--focus-outline) !important;
+      outline-offset: 4px !important;
+      box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.3) !important;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 3px solid var(--border-color);
+      border-radius: 16px;
+    }
+
+    /* Botões Grandes para Fáceis Toques */
+    .btn-large {
+      min-height: 60px;
+      min-width: 60px;
+      padding: 14px 24px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+    }
+
+    /* Indicador Visual do Leitor de Voz Ativo */
+    .reading-highlight {
+      background-color: #fef08a !important;
+      color: #000000 !important;
+      border-radius: 4px;
+    }
+
+    /* Animações Suaves */
+    @keyframes pulse-emergency {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+
+    .pulse-emergency {
+      animation: pulse-emergency 2s infinite;
+    }
+
+    /* CSS Puro para Modal de Emergência (:target fallback) */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay:target, .modal-overlay.active {
+      display: flex;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col p-2 md:p-6">
+
+  <!-- BARRA SUPERIOR DE ACESSIBILIDADE -->
+  <header role="banner" class="w-full max-w-5xl mx-auto mb-6">
+    <div class="card p-4 shadow-lg border-2">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- Identificação -->
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-universal-access text-3xl text-blue-700" aria-hidden="true"></i>
+          <div>
+            <h1 class="font-extrabold text-2xl leading-tight">Painel de Acessibilidade</h1>
+            <p class="text-sm opacity-90 font-medium">Ajuste o tamanho das letras e os sons da tela</p>
+          </div>
+        </div>
+
+        <!-- Controles de Acessibilidade -->
+        <nav aria-label="Menu de Acessibilidade" class="flex flex-wrap items-center justify-center gap-2">
+          
+          <!-- Aumentar Fonte -->
+          <button id="btn-font-increase" onclick="changeFontSize(0.15)" class="btn-large bg-blue-700 text-white hover:bg-blue-800" title="Aumentar o tamanho do texto (Letras maiores)" aria-label="Aumentar Fonte">
+            <i class="fa-solid fa-font text-xl" aria-hidden="true"></i>
+            <span class="text-lg">A+</span>
+          </button>
+
+          <!-- Diminuir Fonte -->
+          <button id="btn-font-decrease" onclick="changeFontSize(-0.15)" class="btn-large bg-blue-700 text-white hover:bg-blue-800" title="Diminuir o tamanho do texto" aria-label="Diminuir Fonte">
+            <i class="fa-solid fa-font text-sm" aria-hidden="true"></i>
+            <span class="text-base">A-</span>
+          </button>
+
+          <!-- Resetar Fonte -->
+          <button id="btn-font-reset" onclick="resetFontSize()" class="btn-large bg-gray-600 text-white hover:bg-gray-700" title="Restaurar tamanho normal da fonte" aria-label="Restaurar Fonte Normal">
+            <span>Normal</span>
+          </button>
+
+          <!-- Leitura em Voz Alta -->
+          <button id="btn-read-aloud" onclick="toggleReadAloud()" class="btn-large bg-emerald-700 text-white hover:bg-emerald-800" title="Ouvir o texto da página em voz alta" aria-label="Ouvir a Página em Voz Alta">
+            <i id="read-icon" class="fa-solid fa-volume-high text-xl" aria-hidden="true"></i>
+            <span id="read-text">Ouvir Página</span>
+          </button>
+
+          <!-- Contraste -->
+          <button onclick="toggleTheme()" class="btn-large bg-purple-800 text-white hover:bg-purple-900" title="Mudar cores da tela para facilitá leitura" aria-label="Alternar Modo de Contraste">
+            <i class="fa-solid fa-circle-half-stroke text-xl" aria-hidden="true"></i>
+            <span>Contraste</span>
+          </button>
+
+        </nav>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="w-full max-w-5xl mx-auto flex-1 space-y-6" id="conteudo-principal">
+
+    <!-- BOTÃO DE EMERGÊNCIA DESTACADO -->
+    <section aria-label="Botão de Socorro Urgente">
+      <a href="#modal-emergencia" onclick="openEmergencyModal(event)" class="btn-large pulse-emergency w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-black py-6 border-4 border-red-800 shadow-2xl rounded-2xl flex items-center justify-center gap-4 text-center focus:ring-4 focus:ring-yellow-400">
+        <i class="fa-solid fa-truck-medical text-4xl" aria-hidden="true"></i>
+        <span>EMERGÊNCIA - PEDIR AJUDA AGORA</span>
+      </a>
+    </section>
+
+    <!-- BOAS-VINDAS E INSTRUÇÕES SIMPLES -->
+    <section class="card p-6 md:p-8 space-y-4 shadow-md">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-house text-3xl text-blue-600" aria-hidden="true"></i>
+        <h2 class="text-3xl font-bold">Portal Simplificado para Idosos</h2>
+      </div>
+      <p class="text-xl leading-relaxed">
+        Este site foi desenvolvido com letras grandes, botões fáceis de clicar e um sistema simples para ajudar você no dia a dia. Se precisar de socorro, clique no botão vermelho de <strong>EMERGÊNCIA</strong> no topo.
+      </p>
+    </section>
+
+    <!-- CARDS DE UTILIDADE PÚBLICA -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Card: Telefones Úteis -->
+      <section class="card p-6 space-y-4 shadow-md">
+        <h3 class="text-2xl font-bold flex items-center gap-3">
+          <i class="fa-solid fa-phone-volume text-emerald-600" aria-hidden="true"></i>
+          Telefones Importantes
+        </h3>
+        <ul class="space-y-3">
+          <li class="flex items-center justify-between p-3 rounded-lg border-2 border-slate-300">
+            <span class="font-bold text-xl">Disque Idoso (Direitos)</span>
+            <a href="tel:100" class="btn-large bg-emerald-700 text-white text-lg">100</a>
+          </li>
+          <li class="flex items-center justify-between p-3 rounded-lg border-2 border-slate-300">
+            <span class="font-bold text-xl">SAMU (Ambulância)</span>
+            <a href="tel:192" class="btn-large bg-red-600 text-white text-lg">192</a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Card: Lembretes de Saúde -->
+      <section class="card p-6 space-y-4 shadow-md">
+        <h3 class="text-2xl font-bold flex items-center gap-3">
+          <i class="fa-solid fa-heart-pulse text-red-600" aria-hidden="true"></i>
+          Dicas para a Sua Saúde
+        </h3>
+        <ul class="space-y-3 text-lg">
+          <li class="flex items-start gap-3">
+            <i class="fa-solid fa-glass-water text-blue-500 text-2xl mt-1" aria-hidden="true"></i>
+            <span>Lembre-se de tomar um copo de água a cada 2 horas.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <i class="fa-solid fa-pills text-purple-600 text-2xl mt-1" aria-hidden="true"></i>
+            <span>Verifique os horários dos seus remédios diários.</span>
+          </li>
+        </ul>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL DE EMERGÊNCIA (ACESSÍVEL) -->
+  <div id="modal-emergencia" class="modal-overlay" role="dialog" aria-labelledby="titulo-modal-emergencia" aria-modal="true">
+    <div class="card bg-white dark:bg-slate-900 border-4 border-red-600 p-6 md:p-8 max-w-xl w-full shadow-2xl rounded-2xl text-center space-y-6">
+      
+      <!-- Cabeçalho do Modal -->
+      <div class="space-y-2">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 dark:bg-red-950 text-red-600 mb-2">
+          <i class="fa-solid fa-triangle-exclamation text-4xl" aria-hidden="true"></i>
+        </div>
+        <h2 id="titulo-modal-emergencia" class="text-3xl font-black text-red-600 dark:text-red-400">
+          CHAMADA DE EMERGÊNCIA
+        </h2>
+        <p class="text-xl font-medium">Clique em um dos botões abaixo para pedir socorro imediatamente:</p>
+      </div>
+
+      <!-- Lista de Contatos Diretos -->
+      <div class="space-y-4">
+        
+        <!-- Polícia -->
+        <a href="tel:190" class="btn-large w-full bg-blue-900 hover:bg-blue-950 text-white text-xl border-2 border-blue-950 shadow-md">
+          <i class="fa-solid fa-shield-halved text-2xl" aria-hidden="true"></i>
+          <span>Ligar para POLÍCIA (190)</span>
+        </a>
+
+        <!-- Bombeiros / SAMU -->
+        <a href="tel:193" class="btn-large w-full bg-red-700 hover:bg-red-800 text-white text-xl border-2 border-red-900 shadow-md">
+          <i class="fa-solid fa-fire-extinguisher text-2xl" aria-hidden="true"></i>
+          <span>Ligar para BOMBEIROS (193)</span>
+        </a>
+
+        <!-- WhatsApp da Pessoa de Confiança -->
+        <a href="https://wa.me/5541999999999?text=Preciso%20de%20ajuda%20urgente!" target="_blank" rel="noopener noreferrer" class="btn-large w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xl border-2 border-emerald-800 shadow-md">
+          <i class="fa-brands fa-whatsapp text-3xl" aria-hidden="true"></i>
+          <span>Enviar Mensagem para Familiar (WhatsApp)</span>
+        </a>
+
+      </div>
+
+      <!-- Botão para Fechar o Modal -->
+      <div class="pt-4 border-t-2 border-slate-300 dark:border-slate-700">
+        <button type="button" onclick="closeEmergencyModal()" class="btn-large w-full bg-gray-700 hover:bg-gray-800 text-white text-lg">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+          <span>Fechar esta tela</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RODAPÉ -->
+  <footer role="contentinfo" class="w-full max-w-5xl mx-auto mt-8 text-center p-6 card border-t-4 border-blue-800">
+    <p class="text-lg font-semibold">Portal Acessível da Terceira Idade &copy; 2026</p>
+    <p class="text-sm opacity-80 mt-1">Projetado com alto contraste e facilidade de leitura para todos os usuários.</p>
+  </footer>
+
+  <!-- SCRIPT PARA FUNCIONALIDADES DINÂMICAS DE ACESSIBILIDADE -->
+  <script>
+    /* VARIÁVEIS DE ESTADO */
+    let currentFontScale = 1;
+    let isReading = false;
+    let currentSpeech = null;
+    let currentThemeIndex = 0; // 0: Claro, 1: Escuro, 2: Alto Contraste
+    const themes = ['theme-light', 'theme-dark', 'theme-high-contrast'];
+
+    /* 1. CONTROLE DE TAMANHO DE FONTE */
+    function changeFontSize(delta) {
+      currentFontScale = Math.max(0.85, Math.min(1.8, currentFontScale + delta));
+      document.documentElement.style.setProperty('--font-scale', currentFontScale);
+      announceAccessibility(`Tamanho do texto ajustado para ${Math.round(currentFontScale * 100)} porcento`);
+    }
+
+    function resetFontSize() {
+      currentFontScale = 1;
+      document.documentElement.style.setProperty('--font-scale', currentFontScale);
+      announceAccessibility("Tamanho do texto restaurado para o normal");
+    }
+
+    /* 2. ALTERNÂNCIA DE TEMAS / ALTO CONTRASTE */
+    function toggleTheme() {
+      document.documentElement.classList.remove(themes[currentThemeIndex]);
+      currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+      document.documentElement.classList.add(themes[currentThemeIndex]);
+
+      const themeNames = ["Modo Claro", "Modo Escuro", "Alto Contraste Amarelo e Preto"];
+      announceAccessibility(`Tema alterado para: ${themeNames[currentThemeIndex]}`);
+    }
+
+    /* 3. LEITURA EM VOZ ALTA (SPEECH SYNTHESIS API) */
+    function toggleReadAloud() {
+      if (!('speechSynthesis' in window)) {
+        alert("Desculpe, o seu navegador não suporta a leitura em voz alta.");
+        return;
+      }
+
+      const readTextSpan = document.getElementById('read-text');
+      const readIcon = document.getElementById('read-icon');
+
+      if (isReading) {
+        window.speechSynthesis.cancel();
+        isReading = false;
+        readTextSpan.textContent = "Ouvir Página";
+        readIcon.className = "fa-solid fa-volume-high text-xl";
+        announceAccessibility("Leitura interrompida.");
+      } else {
+        const mainContent = document.getElementById('conteudo-principal');
+        const textToRead = mainContent.innerText || mainContent.textContent;
+
+        currentSpeech = new SpeechSynthesisUtterance(textToRead);
+        currentSpeech.lang = 'pt-BR';
+        currentSpeech.rate = 0.9; // Leitura um pouco mais pausada para melhor compreensão de idosos
+
+        currentSpeech.onstart = () => {
+          isReading = true;
+          readTextSpan.textContent = "Parar Leitura";
+          readIcon.className = "fa-solid fa-circle-stop text-xl text-yellow-300";
+        };
+
+        currentSpeech.onend = () => {
+          isReading = false;
+          readTextSpan.textContent = "Ouvir Página";
+          readIcon.className = "fa-solid fa-volume-high text-xl";
+        };
+
+        currentSpeech.onerror = () => {
+          isReading = false;
+          readTextSpan.textContent = "Ouvir Página";
+          readIcon.className = "fa-solid fa-volume-high text-xl";
+        };
+
+        window.speechSynthesis.speak(currentSpeech);
+      }
+    }
+
+    /* 4. CONTROLE DO MODAL DE EMERGÊNCIA */
+    function openEmergencyModal(e) {
+      if (e) e.preventDefault();
+      const modal = document.getElementById('modal-emergencia');
+      modal.classList.add('active');
+      const firstLink = modal.querySelector('a');
+      if (firstLink) firstLink.focus();
+      announceAccessibility("Atenção: Tela de emergência aberta. Escolha um dos contatos.");
+    }
+
+    function closeEmergencyModal() {
+      const modal = document.getElementById('modal-emergencia');
+      modal.classList.remove('active');
+      window.location.hash = '';
+      const emergencyBtn = document.querySelector('.pulse-emergency');
+      if (emergencyBtn) emergencyBtn.focus();
+      announceAccessibility("Tela de emergência fechada.");
+    }
+
+    /* ANUNCIADOR PARA LEITORES DE TELA */
+    function announceAccessibility(message) {
+      const announcer = document.createElement('div');
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.classList.add('sr-only');
+      announcer.style.position = 'absolute';
+      announcer.style.width = '1px';
+      announcer.style.height = '1px';
+      announcer.style.overflow = 'hidden';
+      announcer.textContent = message;
+      document.body.appendChild(announcer);
+      setTimeout(() => announcer.remove(), 2000);
+    }
+
+    // Suporte à tecla ESC para fechar o modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeEmergencyModal();
+      }
+    });
+  </script>
+</body>
+</html>
